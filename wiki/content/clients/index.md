@@ -55,20 +55,20 @@ func newClient() *client.Dgraph {
 	}
 
 	return client.NewDgraphClient(
-		protos.NewDgraphClient(d),
+		api.NewDgraphClient(d),
 	)
 }
 ```
 
 ### Alter the database
 
-To set the schema, set it on a `protos.Operation` object, and pass it down to
+To set the schema, set it on a `api.Operation` object, and pass it down to
 the `Alter` method.
 
 ```go
 func setup(c *client.Dgraph) {
 	// Install a schema into dgraph. Accounts have a `name` and a `balance`.
-	err := c.Alter(context.Background(), &protos.Operation{
+	err := c.Alter(context.Background(), &api.Operation{
 		Schema: `
 			name: string @index(term) .
 			balance: int .
@@ -77,7 +77,7 @@ func setup(c *client.Dgraph) {
 }
 ```
 
-`protos.Operation` contains other fields as well, including drop predicate and
+`api.Operation` contains other fields as well, including drop predicate and
 drop all. Drop all is useful if you wish to discard all the data, and start from
 a clean slate, without bringing the instance down.
 
@@ -85,7 +85,7 @@ a clean slate, without bringing the instance down.
 	// Drop all data including schema from the dgraph instance. This is useful
 	// for small examples such as this, since it puts dgraph into a clean
 	// state.
-	err := c.Alter(context.Background(), &protos.Operation{DropAll: true})
+	err := c.Alter(context.Background(), &api.Operation{DropAll: true})
 ```
 
 ### Create a transaction
@@ -157,7 +157,7 @@ the query, and marshal them back into JSON.
 		log.Fatal(err)
 	}
 
-	_, err := txn.Mutate(context.Background(), &protos.Mutation{SetJSON: out})
+	_, err := txn.Mutate(context.Background(), &api.Mutation{SetJSON: out})
 ```
 
 Sometimes, you only want to commit mutation, without querying anything further.
@@ -211,10 +211,10 @@ conn, err := grpc.Dial("127.0.0.1:9080", grpc.WithInsecure())
 x.Checkf(err, "While trying to dial gRPC")
 defer conn.Close()
 
-dc := protos.NewDgraphClient(conn)
+dc := api.NewDgraphClient(conn)
 dg := client.NewDgraphClient(dc)
 
-op := &protos.Operation{}
+op := &api.Operation{}
 op.Schema = `
 	age: int .
 	married: bool .
@@ -253,7 +253,7 @@ p := Person{
 	}},
 }
 
-mu := &protos.Mutation{
+mu := &api.Mutation{
 	CommitNow: true,
 }
 pb, err := json.Marshal(p)
